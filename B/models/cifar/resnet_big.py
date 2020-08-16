@@ -32,7 +32,7 @@ class BasicBlock(nn.Module):
         nn.BatchNorm2d(planes)
       )
     else:
-      self.downsample = lamda x: x
+      self.downsample = lambda x: x
     
     self.stride = stride
 
@@ -146,5 +146,5 @@ class ResNet(nn.Module):
 def resnet18(**kwargs):
   return ResNet(BasicBlock, [2,2,2,2], **kwargs)
 
-def resnet50():
+def resnet50(**kwargs):
   return ResNet(Bottleneck, [3,4,6,3], **kwargs)

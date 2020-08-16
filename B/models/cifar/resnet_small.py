@@ -32,7 +32,7 @@ class BasicBlock(nn.Module):
         nn.BatchNorm2d(planes)
       )
     else:
-      self.downsample = lamda x: x
+      self.downsample = lambda x: x
     
     self.stride = stride
 
@@ -157,7 +157,7 @@ class ResNetSmall(nn.Module):
     self.n_channels = [16,32,64]
 
   def _make_layer(self, block, planes, num_blocks, stride):
-    strides = [stride]+1*(num_blocks-1)
+    strides = [stride]+[1]*(num_blocks-1)
     layers = []
     for stride in strides:
       layers.append(block(self.in_planes, stride))
