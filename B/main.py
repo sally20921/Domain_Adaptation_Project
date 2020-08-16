@@ -18,16 +18,29 @@ def main():
   args = yaml.load(open("config.yaml", "r"), Loader=yaml.FullLoader)
   
   ############Data Loading#########################################
-  if args['datasets'] == 'cifar10':
-    dataloader =  datasets.CIFAR10
-    num_classes = 10
+  if args['datasets'] == 'imagenet':
+    traindir = os.path.join(args['root'], 'train')
+    valdir = os.path.join(args['root'], 'val')
+    normalize = transforms.Normalize(mean=[0.485, 0.456,  0.406],
+                                     std=[0.229,0.224,0.225])
+    train_loader = torch.utils.data.DataLoader(
+      datasets.ImageFolder(traindir, transforms.Compose([
+        transforms.RandomSizedCrop(224),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(), 
+        normalize,
+      ])),
+      batch_size=args['batch_size'], shuffle=True, 
+      num_workers=args['num_workers'], pin_memory=True)
 
-  elif args['datasets'] == 'cifar100':
-    dataloader =  datasets.CIFAR100
-    num_classes = 100
+     val_loader = torch.utils.data.DataLoader(
+       datasets.ImageFolder(valdir, transforms.Compose([
+         transforms.Scale(256),
+         transforms.CenterCrop(224),
+         transforms.ToTensor(),
+         normalize,
+       ])),
+       batch_size=args['batch_size'], shuffle=False,
+       num_workers=args['num_workers'], pin_memory=True)
 
-  else:
-    pass
-
-  
 
