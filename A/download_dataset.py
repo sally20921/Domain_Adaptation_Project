@@ -75,9 +75,9 @@ class Office31Preparer(DatasetPreparer):
         os.system(download_cmd_tmp)
 
     def uncompress(self):
-        tar_cmd = "tar xvf {dataset_dir}/office_31.zip -C {dataset_dir}".format(dataset_dir=self.dataset_root)
+        tar_cmd = "tar xvf {dataset_dir}/Office.zip -C {dataset_dir}".format(dataset_dir=self.dataset_root)
         os.system(tar_cmd)
-        os.remove('{}/office_31.zip'.format(self.dataset_root))
+        os.remove('{}/Office.zip'.format(self.dataset_root))
 
 
 class VisdaPreparer(DatasetPreparer):
@@ -132,10 +132,9 @@ def parse_args():
 
     parser = argparse.ArgumentParser(description='Prepare dataset')
     parser.add_argument('dataset', type=str,
-                        choices=['Office-home', 'Office', 'VisDA'],
+                        choices=['Office-Home', 'Office', 'VisDA'],
                         help='Dataset name')
-    parser.add_argument('--dataset_root', type=str, default=os.getcwd(),
-                        help='Path to dataset root (default: ".")')
+    parser.add_argument('--dataset_root', type=str, default="./datasets")
     # parser.add_argument('')
     args = parser.parse_args()
     return args
@@ -144,15 +143,15 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
 
-    if args.dataset == 'Office-home':
+    if args.dataset == 'Office-Home':
         Preparer = OfficeHomePreparer
     elif args.dataset == 'Office':
         Preparer = Office31Preparer
     elif args.dataset == 'VisDA':
         Preparer = VisdaPreparer
-    elif args.dataset == "digits":
+    #elif args.dataset == "digits":
         # https://domainadaptation.org/api/salad.datasets.digits.html
-        raise NotImplemented
+        #raise NotImplemented
     else:
         raise NotImplemented
 
