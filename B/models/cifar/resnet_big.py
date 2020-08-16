@@ -7,7 +7,7 @@ B. ResNet-18,50(feature dimension 512/2048)
 import torch.nn as nn
 import math
 
-__all__ = ['resnet']
+__all__ = ['resnet18', 'resnet50']
 
 def conv3x3(in_planes, out_planes, stride=1):
   "3x3 convolution with padding"
