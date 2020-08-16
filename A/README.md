@@ -8,6 +8,8 @@
 ## How to use this code
 
 ```
+# you are in folder A
+mkdir datasets
 conda activate A
 pip3 install -r  requirements.txt
 python3 download_dataset.py Office 
