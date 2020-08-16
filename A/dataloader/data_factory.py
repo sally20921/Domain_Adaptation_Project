@@ -87,7 +87,7 @@ for split in SPLITS:
                     ])
   for domain in ['Art', 'Clipart', 'Product', 'RealWorld']:
     name = '{domain}_{split}'.format(domain=domain, split=split)
-    __set[name] = (
+    __sets[name] = (
       lambda domain=domain, transform=transform: OFFICEHOME(OFFICEHOME_DIR, domain=domain, transform=transform))
 
 def get_dataset(name):
