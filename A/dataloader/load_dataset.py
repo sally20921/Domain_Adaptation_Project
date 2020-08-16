@@ -6,7 +6,7 @@ import errno
 import numpy as np
 import torch
 import codecs
-from utils.io_utils import download_url, check_integrity
+#from utils.io_utils import download_url, check_integrity
 import zipfile
 import h5py
 import functools
@@ -327,4 +327,3 @@ def make_dataset(dir, class_to_idx, extensions, list_file=None, include_dir=Fals
                 images = [(path, int(idx)) for (path, idx) in images]
 
     return images
-© 2020 GitHub, Inc.

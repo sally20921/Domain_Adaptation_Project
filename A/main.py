@@ -2,18 +2,19 @@ import os
 import torch
 import torchvision
 import argparse
-
-from utils import post_config_hook
+import yaml
+#from utils import post_config_hook
 
 from dataloader.data_factory import get_dataset
 
 @ex.automain
 def main(_run, _log):
-  args = argparse.Namespace(**_run.config)
-  args = post_config_hook(args, _run)
-  args.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-  args.n_gpu = torch.cuda.device_count()
-  
+  #args = argparse.Namespace(**_run.config)
+  #args = post_config_hook(args, _run)
+  #args.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+  #args.n_gpu = torch.cuda.device_count()
+  args = yaml.load(open("config.yaml", "r"), Loader=yaml.FullLoader)
+
   num_domains = len(args.source_datasets)+len(args.target_datasets)
   num_source_domains = len(args.source_datasets)
   num_target_domains = len(args.target_datasets)
