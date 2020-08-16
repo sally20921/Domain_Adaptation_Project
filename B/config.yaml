@@ -1,0 +1,11 @@
+datasets: "cifar10" #cifar100 #imagenet
+root: "./datasets"
+checkpoint: "./checkpoint"
+source_datasets: ['amazon', 'dslr']
+target_datasets: ['webcam']
+batch_size: 128
+num_workers: 40
+model_name: 'resnet18'
+epochs: 20
+
+
