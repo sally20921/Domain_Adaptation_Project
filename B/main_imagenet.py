@@ -43,7 +43,7 @@ def main():
     batch_size=args['batch_size'], shuffle=True, num_workers=args['num_workers'], pin_memory=True)
   print('preparing dataset cifar completed')
   ####################creating  model###############################3
-  model = MLP(args['model_name'], num_classes)
+  model = MLP(args['model_name'], args['pretrained'], 1000)
   criterion = nn.CrossEntropyLoss()
   optimizer =  optim.SGD(model.parameters(), lr=args['learning_rate'],momentum=args['momentum'], weight_decay=args['weight_decay'])
 

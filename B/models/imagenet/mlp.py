@@ -4,12 +4,12 @@ from .resnet import resnet18, resnet34, resnet50, resnet101
 from .mobilenet  import mobilenetv2
 
 class MLP(nn.Module):
-  def __init__(self, base_model, out_dim):
+  def __init__(self, base_model, pretrained, out_dim):
     super(MLP, self).__init__()
-    self.resnet_dict  = {"resnet18": resnet18(),
-                         "resnet34": resnet34(),
-                         "resnet50": resnet50(),
-                         "resnet101": resnet101(),
+    self.resnet_dict  = {"resnet18": resnet18(pretrained=pretrained),
+                         "resnet34": resnet34(pretrained=pretrained),
+                         "resnet50": resnet50(pretrained=pretrained),
+                         "resnet101": resnet101(pretrained=pretrained),
                          "mobilenetv2": mobilenetv2()}
     resnet =  self._get_basemodel(base_model)
     num_ftrs = resnet.fc.in_features
