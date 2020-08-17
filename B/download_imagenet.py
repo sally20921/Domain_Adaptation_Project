@@ -5,13 +5,13 @@ import requests
 import urllib3
 from PIL import Image
 from io import  BytesIO
-#from bs4 import BeautifulSoup
-
+from bs4 import BeautifulSoup
+import timeit
 from multiprocessing import Pool
 from pathlib  import  Path
 
 DIRECTORY = './image_url'
-DIRECTORY_URL = './datasets/image'
+DIRECTORY_IMAGE = './datasets'
 
 #link = os.listdir('./image_url')[1]
 
@@ -38,6 +38,7 @@ def grabber(link):
   with open(DIRECTORY+'/'+link, 'r') as file_link:
     i = 0
     directory_image_temp = DIRECTORY_IMAGE+'/'+link.replace('.txt', '')
+    print(directory_image_temp)
 
     if not os.path.isdir(directory_image_temp):
       os.mkdir(directory_image_temp)
@@ -49,6 +50,7 @@ def grabber(link):
         image.save(directory_image_temp+'/'+str(i)+'.jpg')
         i = i+1
       except OSError:
+        print("OSError")
         pass
 
 def main():
@@ -60,15 +62,17 @@ def main():
 
   print("Downloading  Imagenet Dataset!")
 
-  with Pool(50) as p:
-    p.map(grab_inter, list_array)
-
+  #with Pool(50) as p:
+  #  p.map(grab_inter, list_array)
+  for wib in list_array:
+    grab_inter(wib)
   print("Finished downloading Dataset!")
   
   links = os.listdir(DIRECTORY)
-  with Pool(processes=50) as p:
-    p.map(grabber, links)
-
+  #with Pool(processes=50) as p:
+  #  p.map(grabber, links)
+  for link in links:
+    grabber(link)
 
 if __name__ == '__main__':
   main()
