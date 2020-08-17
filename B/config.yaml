@@ -13,3 +13,4 @@ dropout: 0
 momentum: 0.9
 weight_decay: 0.01
 
+pretrained: True
