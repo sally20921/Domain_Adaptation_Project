@@ -1,6 +1,0 @@
-datasets: "Office" #Office-Home #VisDA
-root: "./datasets"
-source_datasets: ['amazon', 'dslr']
-target_datasets: ['webcam']
-batch_size: 128
-num_workers: 40
