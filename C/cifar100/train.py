@@ -15,13 +15,12 @@ def get_trainer(args, model, loss_fn, optimizer):
     def update_model(trainer, batch):
         model.train()
         optimizer.zero_grad()
-        net_inputs, target = prepare_batch(args, batch)
-        y_pred = model(**net_inputs)
-        batch_size  = y_pred.shape[0]
-        loss, stats = loss_fn(y_pred, target)
+        inputs, targets  =  prepare_batch(args, batch)
+        y_preds = model(**inputs)
+        loss, stats = loss_fn(y_preds, targets)
         loss.backward()
         optimizer.step()
-        return loss.item(), stats, batch_size, y_pred.detach(), target.detach()
+        return loss.item(), stats, y_preds.detach(), targets.detach()
 
     trainer = Engine(update_model)
 
@@ -40,3 +39,14 @@ def get_trainer(args, model, loss_fn, optimizer):
 
 def train(args):
     args, model, iters, ckpt_available = get_model_ckpt(args)
+    if ckpt_available:
+        print("loaded checkpoint {}".format(args.ckpt_name))
+
+    loss_fn = get_loss(args)
+    optimizer = get_optimizer(args, model)
+    metrics = get_metrics(args)
+    evaluator =  get_evaluator(args, model, loss_fn, metrics)
+
+    logger = get_logger(args)
+
+
