@@ -6,6 +6,7 @@ simclr:
     start_epoch: 0
     epochs: 100
     data_dir_path: "./Datasets"
+    log_dir_path: "./output"
     dataset: "CIFAR10"
     save_num_epochs: 1
     img_size: 32
