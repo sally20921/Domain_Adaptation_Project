@@ -1,0 +1,7 @@
+2020-08-24 18:44:08,814 - simclr - INFO - using config: <class 'config.simclr_config.SimCLRConfig'>: {'simclr': SimCLRConfig.SimCLR(train=SimCLRConfig.Train(batch_size=512, num_workers=8, start_epoch=0, restart_log_dir_path=None, epochs=100, data_dir_path='./Datasets', dataset='CIFAR10', save_num_epochs=1, img_size=32, optimizer='Adam', weight_decay=1e-06, temperature=0.1, global_step=0, current_epoch=0), model=SimCLRConfig.Model(resnet='resnet50', normalize=True, projection_dim=64)), 'logistic_regression': SimCLRConfig.LogisticRegression(epochs=200, batch_size=512, learning_rate=0.001, momentum=0.9, img_size=32, model_path=None, epoch_num=None), 'fine_tuning': SimCLRConfig.FineTuning(epochs=100, batch_size=512, learning_rate=0.001, momentum=0.9, img_size=32, save_num_epochs=None, gamma=0.1, step_size=10, model_path=None, epoch_num=None), 'base': SimCLRConfig.Base(output_dir_path='output', log_dir_path='output/2020_08_24_18_44_08_simclr_cifar10', log_file_path='output/2020_08_24_18_44_08_simclr_cifar10/log.txt', device=device(type='cuda', index=0), num_gpu=2, logger_name='simclr')}
+2020-08-24 18:44:13,349 - simclr - INFO - loaded model
+2020-08-24 18:44:27,338 - simclr - INFO - using train_dataset. length: 50000
+2020-08-24 18:44:27,338 - simclr - INFO - created train_loader. length 97
+2020-08-24 18:44:27,339 - simclr - INFO - created optimizer
+2020-08-24 18:44:27,348 - simclr - INFO - created criterion
+2020-08-24 18:44:34,543 - simclr - INFO - step [    1|   97] -> loss: 7.202939987182617
