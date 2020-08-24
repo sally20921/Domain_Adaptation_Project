@@ -16,5 +16,15 @@ python3 download_dataset.py Office
 # python3 download_dataset.py Office-Home
 # python3 download_dataset.py VisDA
 python3 main.py
+```
 
+```
+ssh -L 16006:127.0.0.1:6006 root@server
+cd checkpoint/
+tensorboard --logdir tfboard
+```
 
+# how to train & test
+```
+python main.py
+```

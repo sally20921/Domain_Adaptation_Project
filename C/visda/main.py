@@ -1,6 +1,6 @@
-import inits
+from __future__ import print_function
+
 import logging 
-import pprint
 import datetime
 import sys
 import random
@@ -9,87 +9,221 @@ import torch
 import torchvision
 import argparse
 import yaml
+import time
+import shutil
+
+import torch.nn as nn
+import torch.optim as optim
 
 from dataloader.data_factory import get_dataset
-from model.model_factory import get_model
+#from model.model_factory import get_model
 from torch.utils import data
-from utils.train_utils import get_optimizer_params
-from utils.train_utils import LRScheduler, Monitor
-from utils import io_utils, eval_utils
+
+from torch.utils.tensorboard import SummaryWriter
+from model.mlp import MLP
+
+from utils import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
+
+best_acc = 0
+use_cuda = torch.cuda.is_available()
+
 
 def main():
+  device  = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
   args = yaml.load(open("config.yaml", "r"), Loader=yaml.FullLoader)
-  #make save_dir
-  if not os.path.isdir(args['save_dir']):
-      os.makedirs(args['save_dir'])
+  
+  global best_acc
+  start_epoch = 0
 
-  #create log file
-  log_filename = 'train_records.log'
-  log_path = os.path.join(args['save_dir'], log_filename)
-  logger = io_utils.get_logger(__name__, log_file=log_path, write_level=logging.INFO, print_level=logging.INFO if args['print_console'] else None, mode='a' if args['resume'] else 'w')
+  if not os.path.isdir(args['checkpoint']):
+      mkdir_p(args['checkpoint'])
+
+  tfboard_dir = os.path.join(args['checkpoint'], 'tfboard')
+  if not os.path.isdir(tfboard_dir):
+    os.makedirs(tfboard_dir)
+  writer = SummaryWriter(tfboard_dir)
   
   #visda number of classes
   args['num_classes'] = 12
 
-  if args['resume']:
-      logger.info('Resume Training')
-  else: 
-      torch.save(vars(args), os.path.join(args['save_dir'], 'args_dict.pth'))
-
   num_classes = args['num_classes']
-  in_features = num_classses
+  in_features = num_classes
   num_domains = 2
   num_source_domains = 1
-  num_target_domains = 2
+  num_target_domains = 1 
 
-  from tensorboardX import SummaryWriter
-  tfboard_dir = os.path.join(args['save_dir'], 'tfboard')
-  if not os.path.isdir(tfboard_dir):
-      os.makedirs(tfboard_dir)
-  writer = SummaryWriter(tfboard_dir)
-
-  if args['resume']:
-      checkpoints = io_utils.load_latest_checkpoints(args['save_dir'], args, logger)
-      start_iter=checkpoints[0]['iteration']+1
-  else:
-      start_iter=1
-
-  num_domains = len(args['source_datasets'])+len(args['target_datasets'])
-  num_source_domains = len(args['source_datasets'])
-  num_target_domains = len(args['target_datasets'])
-
-  source_train_datasets = [get_dataset("{}_{}".format(source_name, 'train')) for source_name in args['source_datasets']]
-  target_train_datasets = [get_dataset("{}_{}".format(target_name, 'train')) for target_name in args['target_datasets']]
-
-  #dataloader
-  source_train_dataloaders = [data.DataLoader(source_train_dataset, batch_size=args['batch_size'], shuffle=True, num_workers=args['num_workers'], drop_last=True, pin_memory=True) for source_train_dataset in source_train_datasets]
-  target_train_dataloaders = [data.DataLoader(target_train_dataset, batch_size = args['batch_size'], shuffle=True, num_workers=args['num_workers'], drop_last=True, pin_memory=True) for target_train_dataset in target_train_datasets]
-  print("train data loaded")
-
-  #validation dataloader
-  target_val_datasets = [get_dataset("{}_{}".format(target_name, 'val')) for target_name in args['target_datasets']]
-  target_val_dataloaders = [data.DataLoader(target_val_dataset, batch_size=args['batch_size'], shuffle=False, num_workers=args['num_workers'], pin_memory=True) for target_val_dataset  in target_val_datasets]
-  print("validation data loaded")
+  #dataset loading
+  train_dataset = get_dataset("{}_{}".format('train', 'train')) 
+  train_dataloader = data.DataLoader(train_dataset, batch_size=args['batch_size'], shuffle=True, num_workers=args['num_workers'], drop_last=True, pin_memory=True)
+  
+  val_dataset = get_dataset("{}_{}".format('validation', 'val'))
+  val_dataloader = data.DataLoader(val_dataset, batch_size=args['batch_size'], shuffle=False, num_workers=args['num_workers'], pin_memory=True) 
 
   #model loading
-  model = get_model(args['model_name'], args['num_classes'], args['in_features'], num_domains=num_domains, pretrained=True)
-
-  model.train(True)
-  if args.resume:
-      model.load_state_dict(checkpoints[0]['model'])
+  model = MLP(args['model_name'], args['num_classes'])
   model = model.cuda(args['gpu'])
+  criterion = nn.CrossEntropyLoss()
+  optimizer = optim.SGD(model.parameters(), lr=args['learning_rate'], momentum=args['momentum'], weight_decay=args['weight_decay'])
 
-  optimizer = optim.SGD(params, momentum=0.9, nesterov=True)
+  #resume
+  title = 'visda'+args['model_name']
+  if args['resume']:
+      args['checkpoint'] = os.path.dirname(args['resume'])
+      checkpoint =  torch.load(args['resume'])
+      best_acc = checkpoint['best_acc']
+      start_epoch = checkpoint['epoch']
+      model.load_state_dict(checkpoint['state_dict'])
+      optimizer.load_state_dict(checkpoint['optimizer'])
+      logger = Logger(os.path.join(args.checkpoint, 'log.txt'), title=title, resume=True)
+  else:
+      logger = Logger(os.path.join(args['checkpoint'], 'log.txt'), title=title)
+      logger.set_names(['Train Loss', 'Valid Loss', 'Train Acc.', 'Valid Acc.'])
+#train and val
+  for epoch in range(start_epoch, args['epochs']):
+        train_loss, train_acc = train(train_dataloader, model, criterion, optimizer, epoch, use_cuda)
+        writer.add_scalar("Loss/train", train_loss, epoch)
+        writer.add_scalar("Acc/train", train_acc, epoch)
 
-  logger.info('Train Starts')
+        test_loss, test_acc = test(val_dataloader, model, criterion, epoch, use_cuda)
+        writer.add_scalar("Loss/test", test_loss, epoch)
+        writer.add_scalar("Acc/test", test_acc, epoch)
 
-  monitor = Monitor()
+        # append logger file
+        logger.append([train_loss, test_loss, train_acc, test_acc])
 
-  global best_accuracy
-  best_accuracy = 0.0
+        # save model
+        is_best = test_acc > best_acc
+        best_acc = max(test_acc, best_acc)
+        save_checkpoint({
+                'epoch': epoch + 1,
+                'state_dict': model.state_dict(),
+                'acc': test_acc,
+                'best_acc': best_acc,
+                'optimizer' : optimizer.state_dict(),
+            }, is_best, checkpoint=args['checkpoint'])
 
-  for i_iter in range(epochs):
-      optimizer.zero_grad()
+
+
+  logger.close()
+  logger.plot()
+  savefig(os.path.join(args['checkpoint'], 'log.eps'))
+
+  print('Best acc:')
+  print(best_acc)
+
+def train(trainloader, model, criterion, optimizer, epoch, use_cuda):
+    # switch to train mode
+    model.train()
+
+    batch_time = AverageMeter()
+    data_time = AverageMeter()
+    losses = AverageMeter()
+    top1 = AverageMeter()
+    top5 = AverageMeter()
+    end = time.time()
+
+    bar = Bar('Processing', max=len(trainloader))
+    for batch_idx, (inputs, targets) in enumerate(trainloader):
+        # measure data loading time
+        data_time.update(time.time() - end)
+
+        if use_cuda:
+            inputs, targets = inputs.cuda(), targets.cuda(async=True)
+        inputs, targets = torch.autograd.Variable(inputs), torch.autograd.Variable(targets)
+
+        # compute output
+        outputs = model(inputs)
+        loss = criterion(outputs, targets)
+
+        # measure accuracy and record loss
+        prec1, prec5 = accuracy(outputs.data, targets.data, topk=(1, 5))
+        losses.update(loss.data, inputs.size(0))
+        top1.update(prec1, inputs.size(0))
+        top5.update(prec5, inputs.size(0))
+
+        # compute gradient and do SGD step
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        # measure elapsed time
+        batch_time.update(time.time() - end)
+        end = time.time()
+
+        # plot progress
+        bar.suffix  = '({batch}/{size}) Data: {data:.3f}s | Batch: {bt:.3f}s | Total: {total:} | ETA: {eta:} | Loss: {loss:.4f} | top1: {top1: .4f} | top5: {top5: .4f}'.format(
+                    batch=batch_idx + 1,
+                    size=len(trainloader),
+                    data=data_time.avg,
+                    bt=batch_time.avg,
+                    total=bar.elapsed_td,
+                    eta=bar.eta_td,
+                    loss=losses.avg,
+                    top1=top1.avg,
+                    top5=top5.avg,
+                    )
+        bar.next()
+    bar.finish()
+    return (losses.avg, top1.avg)
+
+def test(testloader, model, criterion, epoch, use_cuda):
+    global best_acc
+
+    batch_time = AverageMeter()
+    data_time = AverageMeter()
+    losses = AverageMeter()
+    top1 = AverageMeter()
+    top5 = AverageMeter()
+
+    # switch to evaluate mode
+    model.eval()
+
+    end = time.time()
+    bar = Bar('Processing', max=len(testloader))
+    for batch_idx, (inputs, targets) in enumerate(testloader):
+        # measure data loading time
+        data_time.update(time.time() - end)
+
+        if use_cuda:
+            inputs, targets = inputs.cuda(), targets.cuda()
+        inputs, targets = torch.autograd.Variable(inputs, volatile=True), torch.autograd.Variable(targets)
+
+        # compute output
+        outputs = model(inputs)
+        loss = criterion(outputs, targets)
+
+        # measure accuracy and record loss
+        prec1, prec5 = accuracy(outputs.data, targets.data, topk=(1, 5))
+        losses.update(loss.data, inputs.size(0))
+        top1.update(prec1, inputs.size(0))
+        top5.update(prec5, inputs.size(0))
+
+        # measure elapsed time
+        batch_time.update(time.time() - end)
+        end = time.time()
+
+        # plot progress
+        bar.suffix  = '({batch}/{size}) Data: {data:.3f}s | Batch: {bt:.3f}s | Total: {total:} | ETA: {eta:} | Loss: {loss:.4f} | top1: {top1: .4f} | top5: {top5: .4f}'.format(
+                    batch=batch_idx + 1,
+                    size=len(testloader),
+                    data=data_time.avg,
+                    bt=batch_time.avg,
+                    total=bar.elapsed_td,
+                    eta=bar.eta_td,
+                    loss=losses.avg,
+                    top1=top1.avg,
+                    top5=top5.avg,
+                    )
+        bar.next()
+    bar.finish()
+    return (losses.avg, top1.avg)
+
+def save_checkpoint(state, is_best, checkpoint='checkpoint', filename='checkpoint.pth.tar'):
+    filepath = os.path.join(checkpoint, filename)
+    torch.save(state, filepath)
+    if is_best:
+        shutil.copyfile(filepath, os.path.join(checkpoint, 'model_best.pth.tar'))
+
 
 
 if __name__=='__main__':

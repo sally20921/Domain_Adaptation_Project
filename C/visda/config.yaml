@@ -1,8 +1,9 @@
 datasets: "VisDA" 
 root: "./datasets"
-source_dataset: ['train']
-target_datasets: ['validation']
-model_name: 'resnet50'
+checkpoint: "./checkpoint"
+source_dataset: 'train'
+target_datasets: 'validation'
+model_name: 'resnet18'
 save_dir: './output'
 num_classes: 0
 in_features: 0
@@ -11,7 +12,9 @@ num_workers: 2
 gpu: 0
 manual_seed: 0
 optimizer: 'SGD'
-learning_rate: 1e-5
+learning_rate: 0.01
+dropout: 0 
+momentum: 0.9
 beta1: 0.9
 beta2: 0.999
 weight_decay: 0.01
@@ -23,4 +26,5 @@ save_interval: 500
 print_console: True
 save_ckpts: True
 resume: False
-epochs: 1
+epochs: 5
+evaluate: False
