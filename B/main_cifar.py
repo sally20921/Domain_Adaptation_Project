@@ -43,6 +43,7 @@ def main():
   testset =  dataloader(root=args['root'], train=False, download=False, transform=transform_test)
   testloader = data.DataLoader(testset, batch_size=args['batch_size'], shuffle=False, num_workers=args['num_workers'])
   print('preparing dataset cifar completed')
+
   ####################creating  model###############################3
   model = MLP(args['model_name'], num_classes)
   criterion = nn.CrossEntropyLoss()
@@ -71,4 +72,4 @@ def test(testloader, model, criterion, epoch):
   
 
 if __name__ == '__main__':
-  main()
+    main()

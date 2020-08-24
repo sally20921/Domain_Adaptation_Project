@@ -41,7 +41,8 @@ def main():
       normalize,
     ])),
     batch_size=args['batch_size'], shuffle=True, num_workers=args['num_workers'], pin_memory=True)
-  print('preparing dataset cifar completed')
+  print('preparing dataset imagenet completed')
+
   ####################creating  model###############################3
   model = MLP(args['model_name'], args['pretrained'], 1000)
   criterion = nn.CrossEntropyLoss()

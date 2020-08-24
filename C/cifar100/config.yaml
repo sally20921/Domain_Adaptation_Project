@@ -1,0 +1,21 @@
+datasets: "cifar100" 
+root: "./datasets"
+checkpoint: "./checkpoint"
+source_datasets: ['amazon', 'dslr']
+target_datasets: ['webcam']
+batch_size: 128
+num_workers: 4
+model_name: 'resnet18'
+epochs: 1
+start_epoch: 0
+
+learning_rate: 0.1
+dropout: 0
+momentum: 0.9
+weight_decay: 0.01
+
+
+pretrained: True
+resume: False
+# resume: "./checkpoint/log.txt"
+evaluate: False
