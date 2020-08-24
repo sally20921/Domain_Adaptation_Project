@@ -28,5 +28,5 @@ python python train_classification.py './config/config.yaml' output/PATH_TO_GENE
 
 | Dataset     | Architecture | Batch size | Epochs  | Fine Tuning |
 | ------------| ------------ | -----------| ------ |------------ |
-| CIFAR10     | ResNet50     | 512        | 100  | 0.78     |
+| CIFAR10     | ResNet50     | 512        | 100  | 0.67     |
 
