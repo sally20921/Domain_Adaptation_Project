@@ -4,8 +4,6 @@ scikit-image
 torch
 torchvision
 tensorboard
-onnx
-onnxruntime
 tqdm
 PyYAML
 opencv-python
