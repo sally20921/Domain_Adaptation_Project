@@ -1,0 +1,2 @@
+Train Loss	Valid Loss	Train Acc.	Valid Acc.	
+4.135602	4.060063	5.730000	6.350000	
