@@ -6,7 +6,7 @@ target_datasets: ['webcam']
 batch_size: 128
 num_workers: 4
 model_name: 'resnet18'
-epochs: 1
+epochs: 5
 start_epoch: 0
 
 learning_rate: 0.1

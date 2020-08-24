@@ -17,6 +17,8 @@ import torch.utils.data as data
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 
+from torch.utils.tensorboard import SummaryWriter
+
 from models.mlp import MLP
 
 from utils import Bar, Logger, AverageMeter, accuracy, mkdir_p, savefig
@@ -30,9 +32,15 @@ def main():
     #state = {k:v for k,v in args}
     global best_acc
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
+    
 
     if not os.path.isdir(args['checkpoint']):
         mkdir_p(args['checkpoint'])
+    
+    tfboard_dir = os.path.join(args['checkpoint'], 'tfboard')
+    if not os.path.isdir(tfboard_dir):
+        os.makedirs(tfboard_dir)
+    writer = SummaryWriter(tfboard_dir)
 
     # Data Loading
     print('==> Preparing dataset %s' % args['datasets'])
@@ -92,15 +100,17 @@ def main():
 
     # Train and val
     for epoch in range(start_epoch, args['epochs']):
-        #adjust_learning_rate(optimizer, epoch)
-
-        #print('\nEpoch: [%d | %d] LR: %f' % (epoch + 1, args.epochs, state['lr']))
-
         train_loss, train_acc = train(trainloader, model, criterion, optimizer, epoch, use_cuda)
+        writer.add_scalar("Loss/train", train_loss, epoch)
+        writer.add_scalar("Acc/train", train_acc, epoch)
+
         test_loss, test_acc = test(testloader, model, criterion, epoch, use_cuda)
+        writer.add_scalar("Loss/test", test_loss, epoch)
+        writer.add_scalar("Acc/test", test_acc, epoch)
 
         # append logger file
         logger.append([train_loss, test_loss, train_acc, test_acc])
+        
 
         # save model
         is_best = test_acc > best_acc
@@ -232,13 +242,6 @@ def save_checkpoint(state, is_best, checkpoint='checkpoint', filename='checkpoin
     torch.save(state, filepath)
     if is_best:
         shutil.copyfile(filepath, os.path.join(checkpoint, 'model_best.pth.tar'))
-
-def adjust_learning_rate(optimizer, epoch):
-    global state
-    if epoch in args.schedule:
-        state['lr'] *= args.gamma
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = state['lr']
 
 if __name__ == '__main__':
     main()
