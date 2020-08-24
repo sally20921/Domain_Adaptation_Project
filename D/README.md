@@ -1,4 +1,7 @@
 # SimCLR
+```
+mkdir output
+```
 
 
 ## Training 
