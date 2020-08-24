@@ -6,10 +6,19 @@ import sys
 import json
 import pickle
 import re
+
 import six
 import numpy as np
 import torch 
 from config import log_keys
+
+def load_json(path):
+    with open(path, "r", encoding='utf-8') as f:
+        return json.load(f)
+
+def save_json(data, path, **kwargs):
+    with open(path, 'w') as f:
+        json.dump(data, f, **kwargs)
 
 def get_dirname_from_args(args):
     dirname=''
