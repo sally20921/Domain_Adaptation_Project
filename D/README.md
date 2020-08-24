@@ -13,13 +13,13 @@ python train_simclr.py './config/config.yaml'
 ## Linear evaluation
 
 ```
-python python train_logistic_regression.py './config/config.yaml' output/PATH_TO_GENERATED_TRAINING_OUTPUT EPOCH_NUM
+python python train_logistic_regression.py './config/config.yaml' output/PATH_TO_GENERATED_TRAINING_OUTPUT 100
 ```
 
 ## Fine tuning
 
 ```
-python python train_classification.py './config/config.yaml' output/PATH_TO_GENERATED_TRAINING_OUTPUT EPOCH_NUM
+python python train_classification.py './config/config.yaml' output/PATH_TO_GENERATED_TRAINING_OUTPUT 100
 ```
 
 
