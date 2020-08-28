@@ -32,4 +32,13 @@ class Cli:
         return Munch(args)
 
     def check_dataloader(self, **kwargs):
+        from dataloader.load_dataset import modes
+        from utils import prepare_batch
+        from tqdm import tqdm
 
+        args = self._default_args(**kwargs)
+        iters = get_iterator(args)
+
+    def get_device(args):
+        if 'device' in args:
+            device = args['device']

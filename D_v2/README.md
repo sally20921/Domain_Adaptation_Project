@@ -11,4 +11,7 @@
 - epoch is  started/completed
 - batch iteration is started/completed
 
+# The *@staticmethod* Decorator
+- It  can be  called from an uninstantiated class object, although there is no *cls* parameter  passed to its method. 
+- Since no *self* object is passed either, that means we also don't  have  access to any instance data,  and thus this method can not be called on an instantiated object either.
 

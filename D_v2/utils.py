@@ -39,4 +39,6 @@ def get_dirname_from_args(args):
 
     return dirname[1:]
 
+def prepare_batch(args, batch):
+# from batch, return model input and target pair
 

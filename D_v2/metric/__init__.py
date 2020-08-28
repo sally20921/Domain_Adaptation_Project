@@ -19,4 +19,9 @@ def add_metrics():
             module = eval(name)
             for member in dir(module):
                 member = getattr(module, member)
+                if hasattr(member, "__bases__") and \
+                        Metric in member.__bases__:
+                            metric_dict[underscore(str(member.__name__))] = member
+
+def get_metrics(args):
 

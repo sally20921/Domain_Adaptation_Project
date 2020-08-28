@@ -22,5 +22,19 @@ class Logger:
 
     def __call__(self, name, val, n_iter):
         self.tfboard.add_scalar(name, val, n_iter)
+        if self.log_cmd:
+            tqdm.write('{}:({},{})'.format(n_iter, name, val))
 
+def run_tensorboard(log_path):
+    log = logging.getLogger('werkzeug').setLevel(logging.ERROR)
+    log = logging.getLogger('tensorflow').setLevel(logging.ERROR)
 
+    
+def log_results(logger, name, state, step):
+# log results in log file
+
+def log_results_cmd(name, state, step):
+# log results in command line
+
+def get_logger(args):
+    return Logger(args)
